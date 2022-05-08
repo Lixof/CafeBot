@@ -1,21 +1,32 @@
 package com.example.cafebot.bots;
 
+import com.example.cafebot.services.CafeBotBranchingService;
+import com.example.cafebot.services.CafeBotResponseServices;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.annotation.PostConstruct;
 
 @RequiredArgsConstructor
+@Component
 public class CafeBot extends TelegramLongPollingBot {
 
-    private final String NAME;
-    private final String TOKEN;
+    private final CafeBotBranchingService cafeBotBranchingService;
+    private final CafeBotResponseServices cafeBotResponseServices;
+
+    @PostConstruct
+    private void postConstruct() {
+        cafeBotResponseServices.setCafeBot(this);
+    }
+
+    @Value("${bot.name}")
+    private String NAME;
+    @Value("${bot.token}")
+    private String TOKEN;
 
     @Override
     public String getBotUsername() {
@@ -29,42 +40,25 @@ public class CafeBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        sendCustomKeyboard(update.getMessage().getChatId().toString());
-//        if (update.hasMessage() && update.getMessage().hasText()) {
-//            SendMessage message = new SendMessage();
-//            message.setChatId(update.getMessage().getChatId().toString());
-//            message.setText(update.getMessage().getText());
-//
-//            try {
-//                execute(message);
-//            } catch (TelegramApiException e) {
-//                e.printStackTrace();
-//            }
-//        }
-    }
 
-    public void sendCustomKeyboard(String chatId) {
         SendMessage message = new SendMessage();
-        message.setChatId(chatId);
-        message.setText("Custom message text");
+        message.setChatId(update.getMessage().getChatId().toString());
 
-        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-        List<KeyboardRow> keyboard = new ArrayList<>();
-        KeyboardRow row = new KeyboardRow();
-        row.add("Рядом со мной");
-        row.add("Рядом с адресом");
-        keyboard.add(row);
-        row = new KeyboardRow();
-        row.add("Любимые");
-        row.add("Топ недели");
-        keyboard.add(row);
-        keyboardMarkup.setKeyboard(keyboard);
-        message.setReplyMarkup(keyboardMarkup);
-
-        try {
-            execute(message);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
+        switch (update.getMessage().getText()) {
+            case "Рядом со мной" :
+                cafeBotBranchingService.myLocation(message);
+                break;
+            case "Рядом с адресом" :
+                cafeBotBranchingService.addresLocation(message);
+                break;
+            case "Любимые" :
+                cafeBotBranchingService.loved(message);
+                break;
+            case "Топ недели" :
+                cafeBotBranchingService.topWeek(message);
+                break;
+            default:
+                cafeBotBranchingService.random(message);
         }
     }
 }
