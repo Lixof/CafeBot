@@ -1,26 +1,31 @@
 package com.example.cafebot.bots;
 
-import com.example.cafebot.services.CafeBotBranchingService;
-import com.example.cafebot.services.CafeBotResponseServices;
+import com.example.cafebot.services.KeyboardInterface;
+import com.example.cafebot.services.MessageInterface;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.pinnedmessages.UnpinChatMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.ChatInviteLink;
+import org.telegram.telegrambots.meta.api.objects.ChatPermissions;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMemberOwner;
 
 import javax.annotation.PostConstruct;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Component
 public class CafeBot extends TelegramLongPollingBot {
 
-    private final CafeBotBranchingService cafeBotBranchingService;
-    private final CafeBotResponseServices cafeBotResponseServices;
+    private final MessageInterface messageInterface;
+    private final KeyboardInterface keyboardInterface;
 
     @PostConstruct
     private void postConstruct() {
-        cafeBotResponseServices.setCafeBot(this);
+        keyboardInterface.setCafeBot(this);
     }
 
     @Value("${bot.name}")
@@ -44,21 +49,21 @@ public class CafeBot extends TelegramLongPollingBot {
         SendMessage message = new SendMessage();
         message.setChatId(update.getMessage().getChatId().toString());
 
-        switch (update.getMessage().getText()) {
+        switch (Optional.ofNullable(update.getMessage().getText()).orElse("")) {
             case "Рядом со мной" :
-                cafeBotBranchingService.myLocation(message);
+                messageInterface.myLocation(message, update);
                 break;
             case "Рядом с адресом" :
-                cafeBotBranchingService.addresLocation(message);
+                messageInterface.addressLocation(message, update);
                 break;
             case "Любимые" :
-                cafeBotBranchingService.loved(message);
+                messageInterface.loved(message, update);
                 break;
             case "Топ недели" :
-                cafeBotBranchingService.topWeek(message);
+                messageInterface.topWeek(message, update);
                 break;
             default:
-                cafeBotBranchingService.random(message);
+                messageInterface.random(message, update);
         }
     }
 }

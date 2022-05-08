@@ -13,13 +13,12 @@ import java.util.List;
 
 @Service
 @Data
-public class CafeBotResponseServices {
+public class CafeBotKeyboardServices implements KeyboardInterface {
 
     private CafeBot cafeBot;
 
-    public void response(SendMessage message) {
+    public void defaultResponse(SendMessage message) {
 
-        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboard = new ArrayList<>();
         KeyboardRow row = new KeyboardRow();
         row.add("Рядом со мной");
@@ -29,6 +28,13 @@ public class CafeBotResponseServices {
         row.add("Любимые");
         row.add("Топ недели");
         keyboard.add(row);
+
+        this.response(message, keyboard);
+    }
+
+    public void response(SendMessage message, List<KeyboardRow> keyboard) {
+
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
         keyboardMarkup.setKeyboard(keyboard);
         message.setReplyMarkup(keyboardMarkup);
 
