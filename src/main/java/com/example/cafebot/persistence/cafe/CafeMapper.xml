@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.cafebot.persistence.cafe.CafeMapper">
+    <select id="getById" resultType="com.example.cafebot.persistence.cafe.Cafe" resultMap="getByIdResultMap">
+        <![CDATA[
+        SELECT "Id", "Longitude", "Latitude", "Name", "Desc", "Image"
+         FROM "Cafe"
+        WHERE "Id" = #{id}
+        ]]>
+    </select>
+    <resultMap id="getByIdResultMap" type="com.example.cafebot.persistence.cafe.Cafe" autoMapping="true">
+        <id property="id" column="Id"/>
+    </resultMap>
+</mapper>

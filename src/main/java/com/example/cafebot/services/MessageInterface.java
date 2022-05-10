@@ -5,7 +5,6 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 public interface MessageInterface {
 
-    void myLocation(SendMessage message, Update update);
     void addressLocation(SendMessage message, Update update);
     void loved(SendMessage message, Update update);
     void topWeek(SendMessage message, Update update);
