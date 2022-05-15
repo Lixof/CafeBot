@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class Cafe {
+
     private long id;
     private double longitude;
     private double latitude;

@@ -1,16 +1,14 @@
 package com.example.cafebot.bots;
 
-import com.example.cafebot.services.ResponseInterface;
-import com.example.cafebot.services.MessageInterface;
-import com.example.cafebot.services.LocationService;
+import com.example.cafebot.persistence.cafe.CafeMap;
+import com.example.cafebot.persistence.top.TopMap;
+import com.example.cafebot.services.branching.*;
+import com.example.cafebot.services.response.ResponseInterface;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
-import org.telegram.telegrambots.meta.api.methods.send.SendLocation;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import javax.annotation.PostConstruct;
@@ -20,10 +18,18 @@ import java.util.Optional;
 @Component
 public class CafeBot extends TelegramLongPollingBot {
 
-    private final MessageInterface messageInterface;
     private final ResponseInterface responseInterface;
     private final TelegramBotsApi telegramBotsApi;
+
+    private final CafeMap cafeMap;
+    private final TopMap topMap;
+
     private final LocationService locationService;
+    private final AllService allService;
+    private final TopWeekService topWeekService;
+    private final AddressService addressService;
+    private final DefaultService defaultService;
+    private final IdService idService;
 
     @PostConstruct
     private void postConstruct() throws Exception{
@@ -50,30 +56,40 @@ public class CafeBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
 
-        SendMessage message = new SendMessage();
-        SendPhoto sendPhoto = new SendPhoto();
-        SendLocation sendLocation = new SendLocation();
-        message.setChatId(update.getMessage().getChatId().toString());
-        sendPhoto.setChatId(message.getChatId());
-        sendLocation.setChatId(message.getChatId());
+        String chatId = update.getMessage().getChatId().toString();
 
         if (update.getMessage().getLocation() != null) {
-            locationService.process(sendPhoto, sendLocation, update);
+            locationService.process(chatId, update);
             return;
         }
 
-        switch (Optional.ofNullable(update.getMessage().getText()).orElse("")) {
-            case "Рядом с адресом" :
-                messageInterface.addressLocation(message, update);
+        String mes = Optional.ofNullable(update.getMessage().getText()).orElse("");
+
+        switch (mes) {
+            case "LnpQ1" :
+                allService.process(chatId);
                 break;
-            case "Любимые" :
-                messageInterface.loved(message, update);
+            case "hXB2t" :
+                cafeMap.process();
+                break;
+            case "Cg7Fd" :
+                topMap.process();
+                break;
+            case "Рядом с адресом" :
+                addressService.process(chatId);
                 break;
             case "Топ недели" :
-                messageInterface.topWeek(message, update);
+                topWeekService.process(chatId);
                 break;
             default:
-                messageInterface.random(message, update);
+                defaultService.process(chatId);
+        }
+
+        String[] id = mes.split(" ");
+        if (id[0].equals("id")) {
+            try {
+                idService.process(chatId, Long.parseLong(id[1]));
+            } catch (Exception e ) { e.printStackTrace(); }
         }
     }
 }

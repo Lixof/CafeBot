@@ -8,6 +8,12 @@
         WHERE "Id" = #{id}
         ]]>
     </select>
+    <select id="getAll" resultType="com.example.cafebot.persistence.cafe.Cafe" resultMap="getByIdResultMap">
+        <![CDATA[
+        SELECT "Id", "Longitude", "Latitude", "Name", "Desc", "Image"
+         FROM "Cafe"
+        ]]>
+    </select>
     <resultMap id="getByIdResultMap" type="com.example.cafebot.persistence.cafe.Cafe" autoMapping="true">
         <id property="id" column="Id"/>
     </resultMap>

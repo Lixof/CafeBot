@@ -1,12 +1,10 @@
 package com.example.cafebot.configurations;
 
-import com.example.cafebot.bots.CafeBot;
 import lombok.RequiredArgsConstructor;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
@@ -14,7 +12,6 @@ import javax.sql.DataSource;
 
 @Configuration
 @RequiredArgsConstructor
-@EnableScheduling
 public class CommonConfiguration {
 
     @Value("${datasource.url}")
@@ -37,8 +34,5 @@ public class CommonConfiguration {
     }
 
     @Bean
-    public TelegramBotsApi telegramBotsApi() throws Exception{
-        TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
-        return telegramBotsApi;
-    }
+    public TelegramBotsApi telegramBotsApi() throws Exception{ return new TelegramBotsApi(DefaultBotSession.class); }
 }
